@@ -78,13 +78,15 @@
 - [x] Create `ChunkMetadata` entity (in Metadata Service)
 - [x] Create `ChunkMetadataRepository`
 
-#### Step 2: S3 Multipart Upload Wrapper
-- [ ] Create `S3MultipartService`
-- [ ] Implement `initiateMultipartUpload()`
-- [ ] Implement `uploadPart()`
-- [ ] Implement `completeMultipartUpload()`
-- [ ] Implement `abortMultipartUpload()`
-- [ ] Add error handling
+#### Step 2: S3 Multipart Upload Wrapper ✅ COMPLETED
+- [x] Create `S3MultipartService`
+- [x] Implement `initiateMultipartUpload()`
+- [x] Implement `uploadPart()`
+- [x] Implement `completeMultipartUpload()`
+- [x] Implement `abortMultipartUpload()`
+- [x] Add error handling
+- [x] Create custom exceptions (S3UploadException, ChunkUploadException, UploadSessionNotFoundException)
+- [x] Create GlobalExceptionHandler for File Service
 
 #### Step 3: Chunk Upload Service
 - [ ] Create `ChunkUploadService`
