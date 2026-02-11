@@ -98,21 +98,28 @@
 - [x] Update `S3MultipartService` to return S3 Key
 - [x] Implement `UploadSessionRepository` (In-Memory)
 
-#### Step 4: REST Endpoints
-- [ ] Create `ChunkUploadController`
-- [ ] POST `/files/initiate-upload` endpoint
-- [ ] POST `/files/upload-chunk` endpoint
-- [ ] POST `/files/complete-upload` endpoint
-- [ ] Add request validation
+#### Step 4: Metadata Service Persistence (Reordered) ✅ COMPLETED
+- [x] Update `FileMetadata` entity (status, uploadId, totalChunks)
+- [x] Update `ChunkMetadata` entity (relationships)
+- [x] Implement `MetadataService` logic (initiate, addChunk, complete)
+- [x] Update `MetadataController` with new endpoints
+- [x] Create `InitiateSessionRequest` and `AddChunkRequest` DTOs
 
-#### Step 5: Exception Handling
+#### Step 5: File Service REST Endpoints (Refactored)
+- [ ] Refactor `ChunkUploadService` to use MetadataClient
+- [ ] Create `ChunkUploadController`
+- [ ] Implement `initiate-upload` endpoint
+- [ ] Implement `upload-chunk` endpoint
+- [ ] Implement `complete-upload` endpoint
+
+#### Step 6: Exception Handling
 - [ ] Create `ChunkUploadException`
 - [ ] Create `UploadSessionNotFoundException`
 - [ ] Create `InvalidChunkException`
 - [ ] Update `GlobalExceptionHandler`
 - [ ] Add cleanup logic for failed uploads
 
-#### Step 6: Configuration
+#### Step 7: Configuration
 - [ ] Add chunk size configuration
 - [ ] Add session TTL configuration
 - [ ] Add S3 multipart configuration
