@@ -18,3 +18,4 @@ This project is a cloud storage system designed with a microservices architectur
 
 ## Version History
 - **v0.4**: Production-Grade Exception Handling & Reliability
+- **v0.5**: Security Hardening (Encryption, Presigned URLs, Authorization)

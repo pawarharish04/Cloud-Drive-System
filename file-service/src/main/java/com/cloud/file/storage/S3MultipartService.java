@@ -8,7 +8,11 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 public class S3MultipartService {
 
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
@@ -53,6 +58,7 @@ public class S3MultipartService {
                     .bucket(bucketName)
                     .key(s3Key)
                     .contentType(contentType)
+                    .serverSideEncryption(ServerSideEncryption.AES256) // Enforce Encryption
                     .build();
 
             CreateMultipartUploadResponse response = s3Client.createMultipartUpload(request);
@@ -110,11 +116,13 @@ public class S3MultipartService {
                     .multipartUpload(completedUpload)
                     .build();
 
-            CompleteMultipartUploadResponse response = s3Client.completeMultipartUpload(request);
+            s3Client.completeMultipartUpload(request);
 
-            String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, s3Key);
+            // We don't return public URL anymore.
+            // But for internal log/reference, we can format it.
+            String fileUrl = String.format("s3://%s/%s", bucketName, s3Key);
 
-            log.info("Completed multipart upload for uploadId: {}, URL: {}", uploadId, fileUrl);
+            log.info("Completed multipart upload for uploadId: {}, Path: {}", uploadId, fileUrl);
 
             return fileUrl;
 
@@ -125,11 +133,30 @@ public class S3MultipartService {
     }
 
     /**
-     * Abort a multipart upload (cleanup on failure)
-     * 
-     * @param uploadId S3 upload ID
-     * @param s3Key    S3 object key
+     * Generate Presigned URL for Secure Download
      */
+    public String generatePresignedUrl(String s3Key) {
+        try {
+            GetObjectRequest objectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build();
+
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofMinutes(10)) // 10 Minutes expiry
+                    .getObjectRequest(objectRequest)
+                    .build();
+
+            PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+
+            return presignedRequest.url().toString();
+
+        } catch (Exception e) {
+            log.error("Failed to generate presigned URL for key: {}", s3Key, e);
+            throw new S3UploadFailedException("Failed to generate download link", e);
+        }
+    }
+
     public void abortMultipartUpload(String uploadId, String s3Key) {
         try {
             AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder()
@@ -139,42 +166,21 @@ public class S3MultipartService {
                     .build();
 
             s3Client.abortMultipartUpload(request);
-
             log.info("Aborted multipart upload for uploadId: {}", uploadId);
-
         } catch (Exception e) {
             log.error("Failed to abort multipart upload for uploadId: {}", uploadId, e);
-            // Don't throw exception here, as this is cleanup logic
         }
     }
 
-    /**
-     * Generate a unique S3 key for the file
-     * Format: uploads/{uuid}_{originalFileName}
-     */
     private String generateS3Key(String fileName) {
         String uuid = UUID.randomUUID().toString();
-        return String.format("uploads/%s_%s", uuid, fileName);
+        // Structure for better organization (optional)
+        return String.format("uploads/%s/%s", uuid, fileName);
     }
 
-    /**
-     * Inner class to represent a completed part
-     */
+    @lombok.Data
     public static class CompletedPartInfo {
         private final int partNumber;
         private final String eTag;
-
-        public CompletedPartInfo(int partNumber, String eTag) {
-            this.partNumber = partNumber;
-            this.eTag = eTag;
-        }
-
-        public int getPartNumber() {
-            return partNumber;
-        }
-
-        public String getETag() {
-            return eTag;
-        }
     }
 }

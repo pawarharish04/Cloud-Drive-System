@@ -64,6 +64,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedAccessException ex,
+            HttpServletRequest request) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex, request);
+    }
+
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, FileStorageException ex,
             HttpServletRequest request) {
         ErrorResponse error = ErrorResponse.builder()

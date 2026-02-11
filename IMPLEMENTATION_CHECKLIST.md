@@ -127,11 +127,16 @@
 - [ ] Add S3 multipart configuration
 - [ ] Update `application.yml`
 
-#### Step 8: Documentation Updates
+#### Step 8: Documentation Updates ✅ COMPLETED
 - [x] Update README.md with version history and features
 - [x] Create "How The Project Works" document (Failure Design)
-- [ ] Add API documentation
-- [ ] Update architecture diagrams
+- [x] Create "Security Configuration" document
+
+#### Step 9: Security Hardening ✅ COMPLETED
+- [x] Configure S3 Encryption (SSE-S3)
+- [x] Implement Secure Download (Presigned URLs)
+- [x] Enforce Authorization (Owner Check)
+- [x] Harden API Responses (No Leakage)
 
 ---
 
