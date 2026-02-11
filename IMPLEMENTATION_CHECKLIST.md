@@ -105,12 +105,14 @@
 - [x] Update `MetadataController` with new endpoints
 - [x] Create `InitiateSessionRequest` and `AddChunkRequest` DTOs
 
-#### Step 5: File Service REST Endpoints (Refactored)
-- [ ] Refactor `ChunkUploadService` to use MetadataClient
-- [ ] Create `ChunkUploadController`
-- [ ] Implement `initiate-upload` endpoint
-- [ ] Implement `upload-chunk` endpoint
-- [ ] Implement `complete-upload` endpoint
+#### Step 5: File Service REST Endpoints (Refactored) ✅ COMPLETED
+- [x] Refactor `ChunkUploadService` to use MetadataClient
+- [x] Create `ChunkUploadController`
+- [x] Implement `initiate-upload` endpoint
+- [x] Implement `upload-chunk` endpoint
+- [x] Implement `complete-upload` endpoint
+- [x] Update DTOs to support `fileId` based workflow
+- [x] Create `MetadataClient` DTOs in File Service
 
 #### Step 6: Exception Handling
 - [ ] Create `ChunkUploadException`

@@ -171,6 +171,12 @@ public class MetadataService {
                 return mapToResponse(saved);
         }
 
+        public FileMetadataResponse getFileById(Long fileId) {
+                FileMetadata file = fileRepository.findById(fileId)
+                                .orElseThrow(() -> new ResourceNotFoundException("File not found: " + fileId));
+                return mapToResponse(file);
+        }
+
         public List<FileMetadataResponse> getFilesByOwner(String owner) {
                 return fileRepository.findByOwner(owner).stream()
                                 .map(this::mapToResponse)

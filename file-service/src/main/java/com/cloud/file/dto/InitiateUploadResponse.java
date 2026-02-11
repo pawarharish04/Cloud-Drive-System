@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class InitiateUploadResponse {
 
-    private String uploadId;
+    private String fileId; // Metadata ID (persistent)
+    private String uploadId; // S3 ID (transient)
     private String fileName;
     private Long fileSize;
     private Integer chunkSize;

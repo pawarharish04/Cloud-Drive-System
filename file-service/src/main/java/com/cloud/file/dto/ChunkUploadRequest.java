@@ -12,8 +12,17 @@ import jakarta.validation.constraints.Positive;
 @NoArgsConstructor
 public class ChunkUploadRequest {
 
-    @NotBlank(message = "Upload ID is required")
-    private String uploadId;
+    @NotBlank(message = "File ID is required")
+    private String fileId; // Changed from uploadId to fileId (as String to support potential future UUIDs,
+                           // though Metadata uses Long)
+    // Wait, Metadata uses Long. Let's make it String in DTO but parse it,
+    // or better, make it String in DTO to matching Metadata Service DTOs if they
+    // use String IDs?
+    // Metadata uses Long. Let's stick to String to avoid breaking clients who
+    // expect strings, and parse.
+    // Or just change to Long. Let's keep String for flexibility and consistency
+    // with uploadId,
+    // but name it fileId.
 
     @NotNull(message = "Chunk number is required")
     @Positive(message = "Chunk number must be positive")

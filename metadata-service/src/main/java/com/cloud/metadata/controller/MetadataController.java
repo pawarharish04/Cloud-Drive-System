@@ -53,6 +53,11 @@ public class MetadataController {
         metadataService.abortSession(fileId);
     }
 
+    @GetMapping("/{fileId}")
+    public FileMetadataResponse getFile(@PathVariable Long fileId) {
+        return metadataService.getFileById(fileId);
+    }
+
     @GetMapping("/user/{owner}")
     public List<FileMetadataResponse> getUserFiles(@PathVariable String owner) {
         return metadataService.getFilesByOwner(owner);

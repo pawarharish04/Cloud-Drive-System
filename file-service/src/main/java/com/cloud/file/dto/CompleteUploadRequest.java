@@ -10,6 +10,6 @@ import jakarta.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class CompleteUploadRequest {
 
-    @NotBlank(message = "Upload ID is required")
-    private String uploadId;
+    @NotBlank(message = "File ID is required")
+    private String fileId;
 }
