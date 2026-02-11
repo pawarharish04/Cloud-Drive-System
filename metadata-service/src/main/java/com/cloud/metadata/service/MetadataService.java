@@ -5,6 +5,7 @@ import com.cloud.metadata.dto.FileMetadataResponse;
 import com.cloud.metadata.entity.ChunkMetadata;
 import com.cloud.metadata.entity.FileMetadata;
 import com.cloud.metadata.enums.UploadStatus;
+import com.cloud.metadata.exception.ChunkAlreadyExistsException;
 import com.cloud.metadata.exception.IllegalStateTransitionException;
 import com.cloud.metadata.exception.ResourceNotFoundException;
 import com.cloud.metadata.repository.ChunkMetadataRepository;
@@ -52,6 +53,16 @@ public class MetadataService {
                 FileMetadata file = fileRepository.findById(fileId)
                                 .orElseThrow(() -> new ResourceNotFoundException("File not found: " + fileId));
 
+                // Idempotency Check: prevent duplicate chunks
+                boolean chunkExists = file.getChunks().stream()
+                                .anyMatch(c -> c.getChunkNumber().equals(chunkNumber));
+
+                if (chunkExists) {
+                        log.info("Chunk {} already exists for file {}. Skipping.", chunkNumber, fileId);
+                        // Optionally verify ETag matches if strict?
+                        return;
+                }
+
                 validateStateTransition(file.getStatus(), UploadStatus.ACTIVE);
 
                 // If this is the first chunk, update status to ACTIVE
@@ -67,8 +78,6 @@ public class MetadataService {
                                 .size(size)
                                 .build();
 
-                // We can save directly via chunk repo or add to list.
-                // Adding to list ensures consistency if cascade is set correctly.
                 file.getChunks().add(chunk);
                 fileRepository.save(file);
         }
@@ -90,6 +99,12 @@ public class MetadataService {
         public void completeSession(Long fileId) {
                 FileMetadata file = fileRepository.findById(fileId)
                                 .orElseThrow(() -> new ResourceNotFoundException("File not found: " + fileId));
+
+                // Idempotency Check
+                if (file.getStatus() == UploadStatus.COMPLETED) {
+                        log.info("File {} is already completed. Returning success.", fileId);
+                        return;
+                }
 
                 validateStateTransition(file.getStatus(), UploadStatus.COMPLETED);
 
@@ -154,10 +169,6 @@ public class MetadataService {
         // Legacy/Generic save method (kept for compatibility or basic metadata saving)
         @Transactional
         public FileMetadataResponse saveMetadata(FileMetadataRequest request) {
-                // This might need adjustment if we want to use the new flow strictly
-                // For now, let's just create a completed record or pending record based on
-                // request?
-                // Assuming this is used for non-chunked uploads or initialization
                 FileMetadata metadata = FileMetadata.builder()
                                 .fileName(request.getFileName())
                                 .fileType(request.getFileType())
@@ -192,6 +203,8 @@ public class MetadataService {
                                 .s3Key(file.getS3Key())
                                 .owner(file.getOwner())
                                 .uploadedAt(file.getUpdatedAt())
+                                .status(file.getStatus() != null ? file.getStatus().name() : null)
+                                .uploadId(file.getUploadId())
                                 .build();
         }
 }

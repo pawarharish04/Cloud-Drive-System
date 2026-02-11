@@ -114,12 +114,12 @@
 - [x] Update DTOs to support `fileId` based workflow
 - [x] Create `MetadataClient` DTOs in File Service
 
-#### Step 6: Exception Handling
-- [ ] Create `ChunkUploadException`
-- [ ] Create `UploadSessionNotFoundException`
-- [ ] Create `InvalidChunkException`
-- [ ] Update `GlobalExceptionHandler`
-- [ ] Add cleanup logic for failed uploads
+#### Step 6: Exception Handling ✅ COMPLETED
+- [x] Create `FileStorageException` hierarchy (Base, S3, Metadata, NotFound, InvalidState)
+- [x] Implement Global Exception Handler in File Service
+- [x] Implement Global Exception Handler in Metadata Service
+- [x] Handle S3 exceptions with retry/failure logic
+- [x] Implement Idempotency and State Machine Validation
 
 #### Step 7: Configuration
 - [ ] Add chunk size configuration
@@ -127,9 +127,9 @@
 - [ ] Add S3 multipart configuration
 - [ ] Update `application.yml`
 
-#### Step 7: Documentation Updates
-- [ ] Update README.md with chunking feature
-- [ ] Create "How The Project Works" document
+#### Step 8: Documentation Updates
+- [x] Update README.md with version history and features
+- [x] Create "How The Project Works" document (Failure Design)
 - [ ] Add API documentation
 - [ ] Update architecture diagrams
 

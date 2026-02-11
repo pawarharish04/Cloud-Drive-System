@@ -15,3 +15,6 @@ This project is a cloud storage system designed with a microservices architectur
 
 1.  Navigate to each service directory and follow the setup instructions (TBD).
 2.  Run `docker-compose up --build` to start the entire system locally.
+
+## Version History
+- **v0.4**: Production-Grade Exception Handling & Reliability

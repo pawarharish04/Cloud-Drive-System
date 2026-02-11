@@ -19,5 +19,6 @@ public class FileMetadataResponse {
     private String owner;
     private String uploadId;
     private String status;
+    private Integer totalChunks;
     private LocalDateTime uploadedAt;
 }

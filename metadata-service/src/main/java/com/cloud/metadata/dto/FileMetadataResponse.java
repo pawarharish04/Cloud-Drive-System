@@ -18,4 +18,6 @@ public class FileMetadataResponse {
     private String s3Key;
     private String owner;
     private LocalDateTime uploadedAt;
+    private String status;
+    private String uploadId;
 }

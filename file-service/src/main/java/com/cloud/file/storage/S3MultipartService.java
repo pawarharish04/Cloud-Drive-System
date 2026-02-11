@@ -1,6 +1,6 @@
 package com.cloud.file.storage;
 
-import com.cloud.file.exception.S3UploadException;
+import com.cloud.file.exception.S3UploadFailedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,19 +63,10 @@ public class S3MultipartService {
 
         } catch (Exception e) {
             log.error("Failed to initiate multipart upload for file: {}", fileName, e);
-            throw new S3UploadException("Failed to initiate multipart upload", e);
+            throw new S3UploadFailedException("Failed to initiate multipart upload", e);
         }
     }
 
-    /**
-     * Upload a single part/chunk to S3
-     * 
-     * @param uploadId   S3 upload ID
-     * @param s3Key      S3 object key
-     * @param partNumber Part number (1-indexed)
-     * @param data       Chunk data
-     * @return ETag of the uploaded part
-     */
     public String uploadPart(String uploadId, String s3Key, int partNumber, byte[] data) {
         try {
             UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
@@ -95,21 +86,12 @@ public class S3MultipartService {
 
         } catch (Exception e) {
             log.error("Failed to upload part {} for uploadId: {}", partNumber, uploadId, e);
-            throw new S3UploadException("Failed to upload part " + partNumber, e);
+            throw new S3UploadFailedException("Failed to upload part " + partNumber, e);
         }
     }
 
-    /**
-     * Complete the multipart upload
-     * 
-     * @param uploadId S3 upload ID
-     * @param s3Key    S3 object key
-     * @param parts    List of completed parts with their ETags
-     * @return S3 object URL
-     */
     public String completeMultipartUpload(String uploadId, String s3Key, List<CompletedPartInfo> parts) {
         try {
-            // Convert our CompletedPartInfo to S3's CompletedPart
             List<CompletedPart> completedParts = parts.stream()
                     .map(part -> CompletedPart.builder()
                             .partNumber(part.getPartNumber())
@@ -138,7 +120,7 @@ public class S3MultipartService {
 
         } catch (Exception e) {
             log.error("Failed to complete multipart upload for uploadId: {}", uploadId, e);
-            throw new S3UploadException("Failed to complete multipart upload", e);
+            throw new S3UploadFailedException("Failed to complete multipart upload", e);
         }
     }
 
