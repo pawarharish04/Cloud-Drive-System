@@ -88,13 +88,15 @@
 - [x] Create custom exceptions (S3UploadException, ChunkUploadException, UploadSessionNotFoundException)
 - [x] Create GlobalExceptionHandler for File Service
 
-#### Step 3: Chunk Upload Service
-- [ ] Create `ChunkUploadService`
-- [ ] Implement `initiateUpload()`
-- [ ] Implement `uploadChunk()`
-- [ ] Implement `completeUpload()`
-- [ ] Implement session tracking logic
-- [ ] Add validation logic
+#### Step 3: Chunk Upload Service ✅ COMPLETED
+- [x] Create `ChunkUploadService`
+- [x] Implement `initiateUpload()`
+- [x] Implement `uploadChunk()`
+- [x] Implement `completeUpload()`
+- [x] Implement session tracking logic
+- [x] Add validation logic
+- [x] Update `S3MultipartService` to return S3 Key
+- [x] Implement `UploadSessionRepository` (In-Memory)
 
 #### Step 4: REST Endpoints
 - [ ] Create `ChunkUploadController`

@@ -28,13 +28,23 @@ public class S3MultipartService {
     private String bucketName;
 
     /**
+     * Data class for initiation response
+     */
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class MultipartInitResult {
+        private String uploadId;
+        private String s3Key;
+    }
+
+    /**
      * Initiate a multipart upload in S3
      * 
      * @param fileName    Original file name
      * @param contentType MIME type of the file
-     * @return Upload ID from S3
+     * @return MultipartInitResult containing Upload ID and S3 Key
      */
-    public String initiateMultipartUpload(String fileName, String contentType) {
+    public MultipartInitResult initiateMultipartUpload(String fileName, String contentType) {
         try {
             // Generate unique S3 key
             String s3Key = generateS3Key(fileName);
@@ -49,7 +59,7 @@ public class S3MultipartService {
 
             log.info("Initiated multipart upload for file: {} with uploadId: {}", fileName, response.uploadId());
 
-            return response.uploadId();
+            return new MultipartInitResult(response.uploadId(), s3Key);
 
         } catch (Exception e) {
             log.error("Failed to initiate multipart upload for file: {}", fileName, e);
