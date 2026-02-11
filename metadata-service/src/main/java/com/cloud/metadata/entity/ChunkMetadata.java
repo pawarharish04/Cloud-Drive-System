@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
  * Links to the parent FileMetadata entity.
  */
 @Entity
-@Table(name = "chunk_metadata")
+@Table(name = "chunk_metadata", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "file_id", "chunk_number" })
+})
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,8 +25,9 @@ public class ChunkMetadata {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "file_id", nullable = false)
-    private Long fileId; // Foreign key to file_metadata
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id", nullable = false)
+    private FileMetadata fileMetadata;
 
     @Column(name = "chunk_number", nullable = false)
     private Integer chunkNumber;
@@ -35,9 +38,14 @@ public class ChunkMetadata {
     @Column(name = "size", nullable = false)
     private Long size;
 
-    @Column(name = "uploaded_at")
-    private LocalDateTime uploadedAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "checksum")
     private String checksum; // Optional: for additional validation
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }
