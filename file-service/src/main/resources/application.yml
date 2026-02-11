@@ -1,0 +1,18 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: file-service
+  cloud:
+    aws:
+      s3:
+        bucket: my-cloud-drive-bucket
+      region:
+        static: us-east-1
+      credentials:
+        access-key: YOUR_ACCESS_KEY
+        secret-key: YOUR_SECRET_KEY
+
+metadata-service:
+  url: http://metadata-service:8083 # Internal docker DNS name

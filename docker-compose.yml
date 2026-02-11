@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - cloud-drive-net
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    networks:
+      - cloud-drive-net
+
+  file-service:
+    build: ./file-service
+    container_name: file-service
+    ports:
+      - "8082:8082"
+    networks:
+      - cloud-drive-net
+
+  metadata-service:
+    build: ./metadata-service
+    container_name: metadata-service
+    ports:
+      - "8083:8083"
+    networks:
+      - cloud-drive-net
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    networks:
+      - cloud-drive-net
+
+networks:
+  cloud-drive-net:
+    driver: bridge

@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+        - id: file-service
+          uri: lb://file-service
+          predicates:
+            - Path=/files/**
+        - id: metadata-service
+          uri: lb://metadata-service
+          predicates:
+            - Path=/metadata/**
