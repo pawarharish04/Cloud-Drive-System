@@ -18,6 +18,7 @@ This project is a cloud storage system designed with a microservices architectur
 - **v0.4**: Production-Grade Exception Handling & Reliability
 - **v0.5**: Security Hardening (Encryption, Presigned URLs, Authorization)
 - **v0.6**: Production Configuration & Docker Hardening
+- **v0.7**: Automated Integration Testing (Testcontainers)
 
 ## Quick Start
 
@@ -52,6 +53,28 @@ For detailed configuration options, see [`docs/Configuration_Guide.md`](docs/Con
 # Run E2E validation
 # See docs/Quick_Test_Guide.md for detailed steps
 ```
+
+### Automated Integration Tests
+```bash
+# Run all integration tests (requires Docker)
+mvn test
+
+# Run specific test class
+mvn test -Dtest=MetadataServiceIntegrationTest
+
+# Run specific test method
+mvn test -Dtest=SecurityIntegrationTest#shouldBlockNonOwnerFromDownloading
+```
+
+**Test Coverage**:
+- ✅ 30+ integration tests using Testcontainers
+- ✅ Real PostgreSQL database (not H2)
+- ✅ Full upload lifecycle validation
+- ✅ Security and authorization tests
+- ✅ Idempotency validation
+- ✅ CI/CD ready (no external dependencies)
+
+See [`docs/Testing_Strategy.md`](docs/Testing_Strategy.md) for detailed testing approach.
 
 ### Comprehensive Testing
 - **E2E Validation**: [`docs/E2E_Validation_Checklist.md`](docs/E2E_Validation_Checklist.md)

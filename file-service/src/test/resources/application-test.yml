@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: file-service-test
+
+# Mock S3 configuration for tests
+cloud:
+  aws:
+    s3:
+      bucket: test-bucket
+      region: us-east-1
+      presigned-url-expiration-minutes: 10
+    credentials:
+      access-key: test-access-key
+      secret-key: test-secret-key
+
+# File upload configuration
+file:
+  upload:
+    chunk-size: 5242880
+    max-file-size: 104857600
+    max-chunk-size: 10485760
+
+# Metadata service (will be mocked in tests)
+metadata-service:
+  url: http://localhost:8083
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.cloud.file: DEBUG

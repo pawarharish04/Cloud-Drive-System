@@ -141,7 +141,7 @@
 - [x] Enforce Authorization (Owner Check)
 - [x] Harden API Responses (No Leakage)
 
-#### Step 10: Testing & Validation 🔄 IN PROGRESS
+#### Step 10: Testing & Validation ✅ COMPLETED
 - [x] Create E2E validation checklist
 - [x] Design chaos testing scenarios
 - [x] Document crash recovery tests
@@ -149,7 +149,17 @@
 - [ ] Execute full E2E validation
 - [ ] Execute chaos tests
 - [ ] Document test results
-- [ ] Create automated integration tests (future)
+
+#### Step 11: Automated Integration Testing ✅ COMPLETED
+- [x] Add Testcontainers dependencies
+- [x] Create PostgreSQL test configuration
+- [x] Write MetadataService integration tests (10+ tests)
+- [x] Write UploadFlow integration tests (5+ tests)
+- [x] Write FileService integration tests
+- [x] Write Security integration tests (5+ tests)
+- [x] Create test application properties
+- [x] Document testing strategy
+- [x] Ensure CI/CD readiness
 
 ---
 
