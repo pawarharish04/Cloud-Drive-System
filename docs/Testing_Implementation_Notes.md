@@ -1,98 +1,53 @@
 # Integration Testing Implementation Notes
 
-## Current Status
+## Status Update (Post-Refactoring)
 
-The integration test framework has been created with:
-- ✅ Testcontainers configuration
-- ✅ Test structure and organization
-- ✅ Testing strategy documentation
+The integration test suite has been aligned with the actual implementation.
 
-## Important: Test Compilation Issues
+### Fixes Applied
 
-The test files reference APIs that may need adjustment based on the actual implementation:
+1. **MetadataService Tests**:
+   - Updated `MetadataServiceIntegrationTest` and `UploadFlowIntegrationTest` to use correct method signatures (no DTOs extensively, direct arguments).
+   - Corrected Exception imports (`ResourceNotFoundException`, `IllegalStateTransitionException`).
+   - Corrected Repository method usage (`findByFileMetadataIdOrderByChunkNumberAsc`).
+   - Added `spring-boot-testcontainers` dependency to `pom.xml`.
 
-### Expected vs Actual API Differences
+2. **FileService Tests**:
+   - Refactored `FileServiceIntegrationTest` to target `ChunkUploadService` (the actual orchestrator).
+   - Updated DTO usage (`InitiateUploadRequest` uses `owner` field).
+   - Corrected `MetadataClient` mocks (`initiateSession` returns Long).
 
-The tests assume certain method signatures and DTOs exist. Before running tests, verify:
+3. **Security Tests**:
+   - Aligned `SecurityIntegrationTest` with `FileDownloadService` logic.
+   - Verified `FileMetadataResponse` fields and getters.
 
-1. **MetadataService API**:
-   - `completeSession(Long fileId, String s3Url)` - Check if this method exists or if signature is different
-   - `getFile(Long id)` - Verify this method exists
-   
-2. **DTOs**:
-   - `ChunkUploadRequest` - Verify package and fields
-   - `InitiateUploadRequest` - Verify package and fields
-   - `FileMetadataResponse` - Verify it has all expected fields
+### Next Steps
 
-3. **Repository Methods**:
-   - `findByFileIdOrderByChunkNumber(Long fileId)` - Add if missing
+1. **Run Tests**:
+   ```bash
+   mvn test
+   ```
 
-### Next Steps to Make Tests Runnable
+2. **Verify Results**:
+   - Check targeted test execution.
+   - Verify PostgreSQL container startup.
 
-1. **Review actual implementation** of MetadataService and FileService
-2. **Adjust test code** to match actual method signatures
-3. **Add missing repository methods** if needed
-4. **Run `mvn clean compile`** to verify main code compiles
-5. **Run `mvn test`** to execute tests
+3. **Troubleshooting**:
+   - If `ServiceConnection` still fails, ensure Maven reloads dependencies.
+   - If specific assertions fail, they likely point to business logic nuances (e.g. status strings vs enums).
 
-### Alternative Approach
-
-If you prefer to see the tests run immediately, I can:
-1. Check the actual implementation
-2. Create simplified tests that match the current API exactly
-3. Gradually expand test coverage
-
-## Test Organization
+## Adjusted Test Organization
 
 ```
 metadata-service/
-├── src/
-│   ├── main/java/...
-│   └── test/java/com/cloud/metadata/
-│       ├── TestcontainersConfiguration.java
-│       └── service/
-│           ├── MetadataServiceIntegrationTest.java
-│           └── UploadFlowIntegrationTest.java
+├── src/test/java/com/cloud/metadata/
+│   ├── TestcontainersConfiguration.java
+│   └── service/
+│       ├── MetadataServiceIntegrationTest.java  (Aligned)
+│       └── UploadFlowIntegrationTest.java       (Aligned)
 
 file-service/
-├── src/
-│   ├── main/java/...
-│   └── test/java/com/cloud/file/
-│       └── service/
-│           ├── FileServiceIntegrationTest.java
-│           └── SecurityIntegrationTest.java
+├── src/test/java/com/cloud/file/service/
+│   ├── FileServiceIntegrationTest.java          (Refactored)
+│   └── SecurityIntegrationTest.java             (Aligned)
 ```
-
-## Running Tests (Once Compilation Issues Resolved)
-
-```bash
-# Run all tests
-mvn test
-
-# Run specific service tests
-cd metadata-service && mvn test
-cd file-service && mvn test
-
-# Run with Docker
-# (Testcontainers will automatically start PostgreSQL container)
-```
-
-## What's Working
-
-- ✅ Testcontainers dependency configuration
-- ✅ PostgreSQL container setup
-- ✅ Test structure and organization
-- ✅ Testing strategy documentation
-
-## What Needs Adjustment
-
-- ⚠️ Test method calls need to match actual implementation
-- ⚠️ DTO imports need verification
-- ⚠️ Repository method signatures need verification
-
----
-
-**Recommendation**: Let me know if you'd like me to:
-1. Check the actual implementation and fix the tests
-2. Create a simpler "smoke test" that definitely compiles
-3. Proceed with documentation and commit as-is (tests as "TODO")

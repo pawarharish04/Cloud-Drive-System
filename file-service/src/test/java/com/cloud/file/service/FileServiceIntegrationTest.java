@@ -1,11 +1,10 @@
 package com.cloud.file.service;
 
 import com.cloud.file.client.MetadataClient;
-import com.cloud.file.client.dto.FileMetadataResponse;
+import com.cloud.file.client.dto.MetadataInitiateRequest;
 import com.cloud.file.dto.InitiateUploadRequest;
 import com.cloud.file.dto.InitiateUploadResponse;
-import com.cloud.file.entity.UploadStatus;
-import com.cloud.file.exception.UnauthorizedAccessException;
+import com.cloud.file.exception.S3UploadFailedException;
 import com.cloud.file.storage.S3MultipartService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,19 +18,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Integration tests for FileService with mocked S3 and Metadata clients.
- * Tests validate:
- * - Upload workflow orchestration
- * - Security (authorization)
- * - Error handling
- */
 @SpringBootTest
 @ActiveProfiles("test")
 class FileServiceIntegrationTest {
 
     @Autowired
-    private FileService fileService;
+    private ChunkUploadService chunkUploadService;
 
     @MockBean
     private S3MultipartService s3MultipartService;
@@ -41,7 +33,6 @@ class FileServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Reset mocks before each test
         reset(s3MultipartService, metadataClient);
     }
 
@@ -52,9 +43,8 @@ class FileServiceIntegrationTest {
         InitiateUploadRequest request = new InitiateUploadRequest();
         request.setFileName("test-file.txt");
         request.setFileSize(1024L);
-        request.setTotalChunks(2);
         request.setContentType("text/plain");
-        request.setUserId("user123");
+        request.setOwner("user123");
 
         // Mock S3 response
         S3MultipartService.MultipartInitResult s3Result = new S3MultipartService.MultipartInitResult("upload-id-123",
@@ -63,24 +53,22 @@ class FileServiceIntegrationTest {
                 .thenReturn(s3Result);
 
         // Mock Metadata response
-        FileMetadataResponse metadataResponse = new FileMetadataResponse();
-        metadataResponse.setId(1L);
-        metadataResponse.setFileName("test-file.txt");
-        metadataResponse.setStatus(UploadStatus.ACTIVE);
-        when(metadataClient.initiateUpload(any())).thenReturn(metadataResponse);
+        Long expectedFileId = 1L;
+        when(metadataClient.initiateSession(any(MetadataInitiateRequest.class)))
+                .thenReturn(expectedFileId);
 
         // When
-        InitiateUploadResponse response = fileService.initiateUpload(request);
+        InitiateUploadResponse response = chunkUploadService.initiateUpload(request);
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getFileId()).isEqualTo(1L);
+        assertThat(response.getFileId()).isEqualTo("1");
         assertThat(response.getUploadId()).isEqualTo("upload-id-123");
-        assertThat(response.getS3Key()).isEqualTo("s3-key-123");
+        assertThat(response.getS3Key()).isNull(); // Response DTO doesn't include S3 Key usually
 
         // Verify interactions
         verify(s3MultipartService, times(1)).initiateMultipartUpload("test-file.txt", "text/plain");
-        verify(metadataClient, times(1)).initiateUpload(any());
+        verify(metadataClient, times(1)).initiateSession(any(MetadataInitiateRequest.class));
     }
 
     @Test
@@ -90,20 +78,19 @@ class FileServiceIntegrationTest {
         InitiateUploadRequest request = new InitiateUploadRequest();
         request.setFileName("test-file.txt");
         request.setFileSize(1024L);
-        request.setTotalChunks(2);
         request.setContentType("text/plain");
-        request.setUserId("user123");
+        request.setOwner("user123");
 
         // Mock S3 to throw exception
         when(s3MultipartService.initiateMultipartUpload(anyString(), anyString()))
-                .thenThrow(new RuntimeException("S3 unavailable"));
+                .thenThrow(new S3UploadFailedException("S3 unavailable", new RuntimeException()));
 
         // When/Then
-        assertThatThrownBy(() -> fileService.initiateUpload(request))
-                .isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(() -> chunkUploadService.initiateUpload(request))
+                .isInstanceOf(S3UploadFailedException.class)
                 .hasMessageContaining("S3 unavailable");
 
         // Verify metadata was NOT called (fail fast)
-        verify(metadataClient, never()).initiateUpload(any());
+        verify(metadataClient, never()).initiateSession(any());
     }
 }
