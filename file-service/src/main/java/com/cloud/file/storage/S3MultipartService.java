@@ -1,9 +1,9 @@
 package com.cloud.file.storage;
 
+import com.cloud.file.config.S3Properties;
 import com.cloud.file.exception.S3UploadFailedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -28,9 +28,7 @@ public class S3MultipartService {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
-
-    @Value("${spring.cloud.aws.s3.bucket}")
-    private String bucketName;
+    private final S3Properties s3Properties;
 
     /**
      * Data class for initiation response
@@ -55,7 +53,7 @@ public class S3MultipartService {
             String s3Key = generateS3Key(fileName);
 
             CreateMultipartUploadRequest request = CreateMultipartUploadRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(s3Properties.getBucket())
                     .key(s3Key)
                     .contentType(contentType)
                     .serverSideEncryption(ServerSideEncryption.AES256) // Enforce Encryption
@@ -76,7 +74,7 @@ public class S3MultipartService {
     public String uploadPart(String uploadId, String s3Key, int partNumber, byte[] data) {
         try {
             UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(s3Properties.getBucket())
                     .key(s3Key)
                     .uploadId(uploadId)
                     .partNumber(partNumber)
@@ -110,7 +108,7 @@ public class S3MultipartService {
                     .build();
 
             CompleteMultipartUploadRequest request = CompleteMultipartUploadRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(s3Properties.getBucket())
                     .key(s3Key)
                     .uploadId(uploadId)
                     .multipartUpload(completedUpload)
@@ -120,7 +118,7 @@ public class S3MultipartService {
 
             // We don't return public URL anymore.
             // But for internal log/reference, we can format it.
-            String fileUrl = String.format("s3://%s/%s", bucketName, s3Key);
+            String fileUrl = String.format("s3://%s/%s", s3Properties.getBucket(), s3Key);
 
             log.info("Completed multipart upload for uploadId: {}, Path: {}", uploadId, fileUrl);
 
@@ -138,12 +136,14 @@ public class S3MultipartService {
     public String generatePresignedUrl(String s3Key) {
         try {
             GetObjectRequest objectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(s3Properties.getBucket())
                     .key(s3Key)
                     .build();
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(10)) // 10 Minutes expiry
+                    .signatureDuration(Duration.ofMinutes(s3Properties.getPresignedUrlExpirationMinutes())) // 10
+                                                                                                            // Minutes
+                                                                                                            // expiry
                     .getObjectRequest(objectRequest)
                     .build();
 
@@ -160,7 +160,7 @@ public class S3MultipartService {
     public void abortMultipartUpload(String uploadId, String s3Key) {
         try {
             AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(s3Properties.getBucket())
                     .key(s3Key)
                     .uploadId(uploadId)
                     .build();

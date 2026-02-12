@@ -1,18 +1,49 @@
-server:
-  port: 8082
-
 spring:
   application:
     name: file-service
-  cloud:
-    aws:
-      s3:
-        bucket: my-cloud-drive-bucket
-      region:
-        static: us-east-1
-      credentials:
-        access-key: YOUR_ACCESS_KEY
-        secret-key: YOUR_SECRET_KEY
+  profiles:
+    active: ${SPRING_PROFILE:dev}
 
+server:
+  port: 8082
+
+# AWS S3 Configuration
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET:cloud-drive-dev-bucket}
+      region: ${S3_REGION:us-east-1}
+      presigned-url-expiration-minutes: ${S3_PRESIGNED_EXPIRATION:10}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+
+# File Upload Configuration
+file:
+  upload:
+    chunk-size: ${CHUNK_SIZE:5242880}  # 5MB default
+    max-file-size: ${MAX_FILE_SIZE:5368709120}  # 5GB default
+    max-chunk-size: ${MAX_CHUNK_SIZE:104857600}  # 100MB max per chunk
+    session-timeout-hours: ${SESSION_TIMEOUT:24}
+
+# Metadata Service Client
 metadata-service:
-  url: http://metadata-service:8083 # Internal docker DNS name
+  url: ${METADATA_SERVICE_URL:http://metadata-service:8083}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.cloud.file: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

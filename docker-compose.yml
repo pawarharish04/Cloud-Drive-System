@@ -1,46 +1,133 @@
 version: '3.8'
 
 services:
-  api-gateway:
-    build: ./api-gateway
-    container_name: api-gateway
+  # PostgreSQL Database (Production-ready)
+  postgres:
+    image: postgres:15-alpine
+    container_name: cloud-drive-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-metadatadb}
+      POSTGRES_USER: ${POSTGRES_USER:-clouduser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cloudpass}
     ports:
-      - "8080:8080"
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - cloud-drive-net
+      - cloud-drive-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clouduser}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
-  auth-service:
-    build: ./auth-service
-    container_name: auth-service
-    ports:
-      - "8081:8081"
-    networks:
-      - cloud-drive-net
-
-  file-service:
-    build: ./file-service
-    container_name: file-service
-    ports:
-      - "8082:8082"
-    networks:
-      - cloud-drive-net
-
+  # Metadata Service
   metadata-service:
-    build: ./metadata-service
+    build:
+      context: ./metadata-service
+      dockerfile: Dockerfile
     container_name: metadata-service
+    environment:
+      SPRING_PROFILE: ${SPRING_PROFILE:-dev}
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-metadatadb}
+      DB_USERNAME: ${POSTGRES_USER:-clouduser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-cloudpass}
+      DB_DRIVER: org.postgresql.Driver
+      HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      DDL_AUTO: update
+      SHOW_SQL: "false"
+      H2_CONSOLE: "false"
     ports:
       - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
-      - cloud-drive-net
+      - cloud-drive-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
-  notification-service:
-    build: ./notification-service
-    container_name: notification-service
+  # File Service
+  file-service:
+    build:
+      context: ./file-service
+      dockerfile: Dockerfile
+    container_name: file-service
+    environment:
+      SPRING_PROFILE: ${SPRING_PROFILE:-dev}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      METADATA_SERVICE_URL: http://metadata-service:8083
+      CHUNK_SIZE: ${CHUNK_SIZE:-5242880}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-5368709120}
     ports:
-      - "8084:8084"
+      - "8082:8082"
+    depends_on:
+      metadata-service:
+        condition: service_healthy
     networks:
-      - cloud-drive-net
+      - cloud-drive-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      SPRING_PROFILE: ${SPRING_PROFILE:-dev}
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-metadatadb}
+      DB_USERNAME: ${POSTGRES_USER:-clouduser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-cloudpass}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cloud-drive-network
+    restart: unless-stopped
+
+  # API Gateway (Only Public-Facing Service)
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    environment:
+      SPRING_PROFILE: ${SPRING_PROFILE:-dev}
+      AUTH_SERVICE_URL: http://auth-service:8081
+      FILE_SERVICE_URL: http://file-service:8082
+      METADATA_SERVICE_URL: http://metadata-service:8083
+    ports:
+      - "8080:8080" # Only this port exposed to host
+    depends_on:
+      - auth-service
+      - file-service
+      - metadata-service
+    networks:
+      - cloud-drive-network
+    restart: unless-stopped
 
 networks:
-  cloud-drive-net:
+  cloud-drive-network:
     driver: bridge
+
+volumes:
+  postgres_data:

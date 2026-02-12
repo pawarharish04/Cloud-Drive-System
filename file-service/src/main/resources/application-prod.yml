@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: file-service
+
+# Production-specific overrides
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET}  # Must be provided
+      region: ${S3_REGION}
+      presigned-url-expiration-minutes: 10
+
+file:
+  upload:
+    chunk-size: 10485760  # 10MB for production
+    max-file-size: 5368709120  # 5GB
+    max-chunk-size: 104857600  # 100MB
+
+metadata-service:
+  url: ${METADATA_SERVICE_URL}
+
+logging:
+  level:
+    root: WARN
+    com.cloud.file: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

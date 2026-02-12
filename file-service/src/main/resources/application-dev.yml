@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: file-service
+
+# Development-specific overrides
+cloud:
+  aws:
+    s3:
+      bucket: cloud-drive-dev-bucket
+      region: us-east-1
+
+file:
+  upload:
+    chunk-size: 5242880  # 5MB
+    max-file-size: 1073741824  # 1GB for dev testing
+
+metadata-service:
+  url: http://localhost:8083
+
+logging:
+  level:
+    root: INFO
+    com.cloud.file: DEBUG
+    org.springframework.web: DEBUG
