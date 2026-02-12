@@ -41,3 +41,27 @@ curl http://localhost:8080/health
 ```
 
 For detailed configuration options, see [`docs/Configuration_Guide.md`](docs/Configuration_Guide.md).
+
+## Testing & Validation
+
+### Quick Validation
+```bash
+# Run basic health checks
+./scripts/health-check.sh
+
+# Run E2E validation
+# See docs/Quick_Test_Guide.md for detailed steps
+```
+
+### Comprehensive Testing
+- **E2E Validation**: [`docs/E2E_Validation_Checklist.md`](docs/E2E_Validation_Checklist.md)
+- **Chaos Testing**: [`docs/Chaos_Testing_Scenarios.md`](docs/Chaos_Testing_Scenarios.md)
+- **Quick Tests**: [`docs/Quick_Test_Guide.md`](docs/Quick_Test_Guide.md)
+
+### Key Test Scenarios
+- ✅ Multipart upload flow (initiate → chunk → complete)
+- ✅ Secure download via presigned URLs
+- ✅ Idempotency (duplicate chunk/complete requests)
+- ✅ Crash recovery (service restart mid-upload)
+- ✅ Security (cross-user access blocked)
+- ✅ Data persistence (survives container restart)
