@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,7 @@ public class MetadataService {
         public List<ChunkMetadata> getUploadedChunks(Long fileId) {
                 FileMetadata file = fileRepository.findById(fileId)
                                 .orElseThrow(() -> new ResourceNotFoundException("File not found: " + fileId));
-                return file.getChunks();
+                return new ArrayList<>(file.getChunks());
         }
 
         /**

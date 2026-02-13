@@ -1,7 +1,6 @@
 package com.cloud.metadata.service;
 
 import com.cloud.metadata.TestcontainersConfiguration;
-import com.cloud.metadata.dto.FileMetadataResponse;
 import com.cloud.metadata.entity.ChunkMetadata;
 import com.cloud.metadata.entity.FileMetadata;
 import com.cloud.metadata.enums.UploadStatus;

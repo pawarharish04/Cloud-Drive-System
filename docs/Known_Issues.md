@@ -306,12 +306,18 @@ User initiates upload but never completes it (abandons, network failure, etc.).
 1. **Load Testing**: No tests for high concurrency (100+ uploads)
 2. **Soak Testing**: No tests for long-running stability (24+ hours)
 3. **Chaos Mesh**: No automated chaos testing (only manual)
-4. **Integration Tests**: No automated E2E tests (only manual checklist)
-5. **Contract Tests**: No API contract validation
+4. **Contract Tests**: No API contract validation
+
+### ✅ Recently Resolved (2026-02-13)
+
+1. ~~Integration Tests~~ → **13 metadata-service tests + 5 file-service tests now pass**
+   - Fixed Testcontainers Docker Desktop compatibility (upgraded to 1.21.4)
+   - Fixed `LazyInitializationException` in `MetadataService.getUploadedChunks`
+   - Fixed file-service test context loading (S3 auto-config exclusion + property alignment)
 
 ### Recommended Next Steps
 
-1. Add Testcontainers-based integration tests
-2. Add JMeter/Gatling load tests
-3. Set up CI/CD with automated testing
-4. Add mutation testing (PIT)
+1. Add JMeter/Gatling load tests
+2. Set up CI/CD with automated testing
+3. Add mutation testing (PIT)
+

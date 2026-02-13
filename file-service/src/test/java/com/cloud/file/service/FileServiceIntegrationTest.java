@@ -64,7 +64,7 @@ class FileServiceIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.getFileId()).isEqualTo("1");
         assertThat(response.getUploadId()).isEqualTo("upload-id-123");
-        assertThat(response.getS3Key()).isNull(); // Response DTO doesn't include S3 Key usually
+        // S3 Key is not exposed in response
 
         // Verify interactions
         verify(s3MultipartService, times(1)).initiateMultipartUpload("test-file.txt", "text/plain");

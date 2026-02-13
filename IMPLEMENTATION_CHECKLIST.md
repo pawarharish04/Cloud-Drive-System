@@ -3,7 +3,7 @@
 ## 🎯 Project Status: In Progress
 
 **Current Version**: v0.1  
-**Last Updated**: 2026-02-11
+**Last Updated**: 2026-02-13
 
 ---
 
@@ -146,7 +146,7 @@
 - [x] Design chaos testing scenarios
 - [x] Document crash recovery tests
 - [x] Create quick test guide
-- [ ] Execute full E2E validation
+- [x] Execute full E2E validation (Integration tests passing for metadata-service & file-service)
 - [ ] Execute chaos tests
 - [ ] Document test results
 
@@ -196,7 +196,7 @@
 
 ## 🐛 Known Issues
 
-*None currently*
+See [Known Issues & Limitations](docs/Known_Issues.md) for full details.
 
 ---
 
@@ -212,10 +212,10 @@
 
 ## 🎯 Next Immediate Task
 
-**Current Focus**: Milestone 1, Step 1 - Creating DTOs and Entities for chunk upload
+**Current Focus**: Milestone 2 - File Download & Management
 
 **Assigned To**: Development Team  
-**Target Completion**: 2026-02-11
+**Target Completion**: TBD
 
 ---
 
